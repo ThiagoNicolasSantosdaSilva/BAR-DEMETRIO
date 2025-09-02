@@ -1,0 +1,124 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Header fixo no topo */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #1c1c1c;
+    color: #fff;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+}
+
+/* Logo */
+.logo a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Navegação */
+nav {
+    display: flex;
+    align-items: center;
+}
+
+.nav-list {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+}
+
+.nav-list li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-list li a:hover,
+.nav-list li a.ativo {
+    color: #f4c430; /* cor dourada para ativo */
+}
+
+/* Ícones login e carrinho */
+.icone-login img,
+.icone-carrinho img {
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+}
+
+.icone-carrinho {
+    position: relative;
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: #f00;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+
+/* Menu hamburguer */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.menu-toggle .bar {
+    width: 25px;
+    height: 3px;
+    background-color: #fff;
+    margin: 4px 0;
+    transition: 0.4s;
+}
+
+/* Menu mobile */
+@media (max-width: 768px) {
+    .nav-list {
+        position: fixed;
+        right: -100%;
+        top: 60px;
+        flex-direction: column;
+        background-color: #1c1c1c;
+        width: 200px;
+        transition: right 0.3s ease-in-out;
+        padding: 20px;
+        height: calc(100% - 60px);
+    }
+
+    .nav-list.active {
+        right: 0;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-list li {
+        margin-bottom: 15px;
+    }
+}
