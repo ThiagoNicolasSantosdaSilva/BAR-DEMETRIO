@@ -2,55 +2,38 @@
 session_start();
 include 'includes/conexao.php';
 
-// Recebe os dados do fetch
+header('Content-Type: application/json');
+
+// Pega os dados do fetch
 $dados = json_decode(file_get_contents("php://input"), true);
 
-if(!$dados || !isset($dados['itens'])){
-    echo json_encode([
-        "sucesso" => false,
-        "mensagem" => "Dados inválidos"
-    ]);
+if (!isset($dados['itens']) || empty($dados['itens'])) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Nenhum item recebido."]);
     exit;
 }
 
 $itens = $dados['itens'];
 $erros = [];
 
-foreach($itens as $item){
+foreach ($itens as $item) {
     $id = intval($item['id']);
     $quantidade = intval($item['quantidade']);
 
-    // Busca estoque atual
-    $sql = "SELECT estoque FROM produtos WHERE id = $id";
-    $res = mysqli_query($conn, $sql);
+    // Verifica estoque atual
+    $res = mysqli_query($conn, "SELECT estoque FROM produtos WHERE id=$id");
+    $row = mysqli_fetch_assoc($res);
 
-    if(mysqli_num_rows($res) === 0){
-        $erros[] = "Produto ID $id não encontrado.";
-        continue;
-    }
-
-    $produto = mysqli_fetch_assoc($res);
-
-    if($produto['estoque'] < $quantidade){
+    if ($row && $row['estoque'] >= $quantidade) {
+        // Atualiza o estoque
+        $novoEstoque = $row['estoque'] - $quantidade;
+        mysqli_query($conn, "UPDATE produtos SET estoque=$novoEstoque WHERE id=$id");
+    } else {
         $erros[] = "Estoque insuficiente para o produto ID $id.";
-        continue;
     }
-
-    // Atualiza estoque
-    $novoEstoque = $produto['estoque'] - $quantidade;
-    $update = "UPDATE produtos SET estoque = $novoEstoque WHERE id = $id";
-    mysqli_query($conn, $update);
 }
 
-if(count($erros) > 0){
-    echo json_encode([
-        "sucesso" => false,
-        "mensagem" => implode(" | ", $erros)
-    ]);
+if (empty($erros)) {
+    echo json_encode(["sucesso" => true, "mensagem" => "Compra finalizada com sucesso! 🎉"]);
 } else {
-    echo json_encode([
-        "sucesso" => true,
-        "mensagem" => "Compra finalizada e estoque atualizado!"
-    ]);
+    echo json_encode(["sucesso" => false, "mensagem" => implode(" ", $erros)]);
 }
-?>
