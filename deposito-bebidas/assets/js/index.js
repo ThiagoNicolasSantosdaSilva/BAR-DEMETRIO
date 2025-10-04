@@ -41,7 +41,7 @@ circulos.forEach(c =>
 
 /* ---------------- Carrinho ---------------- */
 let quantidadeCarrinho = 0;
-let carrinho = {}; // {id: {nome, quantidade, estoque}}
+let carrinho = {}; // {id: {nome, preco, quantidade, estoque}}
 
 document.querySelectorAll('.lista-produtos li').forEach(li=>{
   const btnMais = li.querySelector('.mais');
@@ -50,6 +50,7 @@ document.querySelectorAll('.lista-produtos li').forEach(li=>{
   const estoqueInicial = parseInt(li.dataset.estoque);
   const id = li.dataset.id;
   const nome = li.querySelector('.descricao').textContent;
+  const preco = parseFloat(li.dataset.preco); // agora tem preço
   let estoqueAtual = estoqueInicial;
 
   btnMais.addEventListener('click', ()=>{
@@ -57,9 +58,12 @@ document.querySelectorAll('.lista-produtos li').forEach(li=>{
       numero.textContent = parseInt(numero.textContent) + 1;
       quantidadeCarrinho++;
       estoqueAtual--;
-      if(!carrinho[id]) carrinho[id] = {nome, quantidade:0, estoque:estoqueInicial};
+
+      if(!carrinho[id]) carrinho[id] = {nome, preco, quantidade:0, estoque:estoqueInicial};
       carrinho[id].quantidade++;
-      document.getElementById('carrinho-quantidade').textContent = quantidadeCarrinho;
+
+      const carrinhoQtd = document.getElementById('carrinho-quantidade');
+      if(carrinhoQtd) carrinhoQtd.textContent = quantidadeCarrinho;
     } else { alert("Estoque esgotado!"); }
   });
 
@@ -71,7 +75,9 @@ document.querySelectorAll('.lista-produtos li').forEach(li=>{
       estoqueAtual++;
       carrinho[id].quantidade--;
       if(carrinho[id].quantidade <= 0) delete carrinho[id];
-      document.getElementById('carrinho-quantidade').textContent = quantidadeCarrinho;
+
+      const carrinhoQtd = document.getElementById('carrinho-quantidade');
+      if(carrinhoQtd) carrinhoQtd.textContent = quantidadeCarrinho;
     }
   });
 });
@@ -81,20 +87,31 @@ const modal = document.getElementById('resumo-modal');
 const listaResumo = document.getElementById('lista-resumo');
 const finalizarBtn = document.getElementById('finalizar-compra');
 const fecharModal = document.querySelector('.modal .close');
+const totalGeral = document.getElementById('total-geral');
 
 function atualizarResumo(){
   listaResumo.innerHTML = '';
+  let total = 0;
+
   for(let id in carrinho){
     let item = carrinho[id];
+    let subtotal = item.quantidade * item.preco;
+    total += subtotal;
+
     let li = document.createElement('li');
     li.innerHTML = `
-      <div class="info">${item.nome}</div>
+      <div class="info">
+        ${item.nome}<br>
+        <small>R$ ${item.preco.toFixed(2).replace('.', ',')} x ${item.quantidade} = R$ ${subtotal.toFixed(2).replace('.', ',')}</small>
+      </div>
       <div class="acoes">
         <button class="menos">-</button>
         <span class="qtd">${item.quantidade}</span>
         <button class="mais">+</button>
       </div>
     `;
+
+    // Botões dentro do resumo
     li.querySelector('.mais').addEventListener('click', ()=>{
       document.querySelector(`li[data-id="${id}"] .mais`).click();
       atualizarResumo();
@@ -103,12 +120,18 @@ function atualizarResumo(){
       document.querySelector(`li[data-id="${id}"] .menos`).click();
       atualizarResumo();
     });
+
     listaResumo.appendChild(li);
   }
+
+  totalGeral.textContent = "Total: R$ " + total.toFixed(2).replace('.', ',');
 }
 
 finalizarBtn.addEventListener('click', ()=>{
-  if(quantidadeCarrinho === 0){ alert("Carrinho vazio!"); return; }
+  if(quantidadeCarrinho === 0){ 
+    alert("Carrinho vazio!"); 
+    return; 
+  }
   atualizarResumo();
   modal.style.display = 'flex';
 });

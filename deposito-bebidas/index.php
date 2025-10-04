@@ -1,6 +1,6 @@
 <?php 
 session_start();
-include 'includes/conexao.php'; 
+include 'includes/conexao.php';
 include 'includes/header.php';
 $logado = isset($_SESSION['usuario_id']);
 ?>
@@ -17,7 +17,7 @@ $logado = isset($_SESSION['usuario_id']);
 <main>
   <h1>Bem-vindo ao Depósito de Bebidas 🍻</h1>
 
-  <!-- CARROSSEL COM LINKS -->
+  <!-- CARROSSEL -->
   <div class="carrossel-container">
     <div class="carrossel-slides">
       <a href="#cervejas"><img src="assets/img/1.png" alt="Promoções"></a>
@@ -31,7 +31,7 @@ $logado = isset($_SESSION['usuario_id']);
     </div>
   </div>
 
-  <!-- CATEGORIAS + PRODUTOS -->
+  <!-- CATEGORIAS -->
   <section class="carrossel-circulos">
     <div class="circulos-container">
       <?php
@@ -50,6 +50,7 @@ $logado = isset($_SESSION['usuario_id']);
       ?>
     </div>
 
+    <!-- PRODUTOS -->
     <div class="conteudo-circulos">
       <?php
       $resCategoriasProdutos=mysqli_query($conn,"SELECT * FROM categorias ORDER BY id ASC");
@@ -58,13 +59,18 @@ $logado = isset($_SESSION['usuario_id']);
         $ativo=$index===0?'ativo':'';
         $idHTML = strtolower(preg_replace('/[^a-zA-Z0-9]/','',$categoria['nome']));
         echo "<div class='conteudo $ativo' data-index='$index' id='$idHTML'>";
-        $cat_id=$categoria['id'];
+        $cat_id=(int)$categoria['id'];
         $produtos=mysqli_query($conn,"SELECT * FROM produtos WHERE categoria_id=$cat_id ORDER BY id ASC");
         if(mysqli_num_rows($produtos)>0){
           echo "<ul class='lista-produtos'>";
           while($produto=mysqli_fetch_assoc($produtos)){
-            echo "<li data-id='{$produto['id']}' data-estoque='{$produto['estoque']}'>
-                    <span class='descricao'>{$produto['nome']} (Estoque: {$produto['estoque']})</span>
+            $id      = $produto['id'];
+            $nome    = htmlspecialchars($produto['nome']);
+            $estoque = (int)$produto['estoque'];
+            $preco   = number_format($produto['preco'], 2, ',', '.'); // Formato BR
+
+            echo "<li data-id='$id' data-estoque='$estoque' data-preco='{$produto['preco']}'>
+                    <span class='descricao'>$nome - R$ $preco (Estoque: $estoque)</span>
                     <div class='quantidade'>
                       <button class='menos'>-</button>
                       <span class='numero'>0</span>
@@ -85,12 +91,13 @@ $logado = isset($_SESSION['usuario_id']);
   
   <button id="finalizar-compra">Finalizar Compra</button>
 
-  <!-- MODAL RESUMO DE COMPRA -->
+  <!-- MODAL RESUMO -->
   <div id="resumo-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
       <h2>Resumo do Carrinho 🛒</h2>
       <ul id="lista-resumo"></ul>
+      <h3 id="total-geral">Total: R$ 0,00</h3>
       <button id="confirmar-compra">Confirmar Compra</button>
     </div>
   </div>
